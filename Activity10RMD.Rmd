@@ -1,0 +1,133 @@
+---
+title: "Activity09"
+author: "Luke Hoffner"
+date: "`r Sys.Date()`"
+always_allow_html: TRUE
+output: word_document
+ 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+# The Collatz Conjecture
+
+## Introduction
+The Collatz Conjecture is a very famous math problem that was created by a mathematician named Lothar Collatz. The idea of this problem is that by applying this conjecture, every number that is used will reach 1. The function has two conditions, if a number is even, divide it by two, if the number is odd, multiply it by 3 and add 1. By putting any number into this function, the number will always end up as 1. 
+
+Below is the code that operates as the Collatz Conjecture by taking an input of any number and returning number of iterations of the function. 
+
+```{r collatzConjecture, echo = TRUE}
+#This code chunk is gives the stopping time for the collatz conjecture
+applyCollatzConjecture <- function(numstart, numstop = 0){
+  if (numstart == 1) { #returns the stopping time of a number
+    return(numstop)
+  }else if (numstart %% 2 == 0){ #Evaluates if the number is even
+    applyCollatzConjecture(numstart = numstart/2, numstop = numstop + 1)
+  }else{ #applies the conjecture for odd numbers that aren't 1
+    applyCollatzConjecture(numstart = 3 * numstart + 1, numstop = numstop + 1)
+  }
+}
+```
+
+
+Below is a distribution of the number of times that the Collatz Conjecture was applied to reduce a number to 1 for numbers 1-10,000
+
+```{r collatHistogram, echo = TRUE}
+#This code chunk creates a distribution of the stopping times
+`Collatz Conjecture` <- sapply(X = 1:10000, FUN = applyCollatzConjecture) 
+hist(x = `Collatz Conjecture`)
+```
+
+## Analysis
+From this data we can see that it is a bi-modal distribution, with peaks around a stopping time of 50 and of 130. There are about 2,000 numbers with a stopping time of 50 and 1,500 with a stopping time of 130. The data ranges from 0 to slightly past 250. The majority of the numbers have a stopping time between 0 and 100. It is also interesting that this conjecture works on every number, but we don't understand why.
+
+# The Diamonds Data
+
+## Introduction
+The Diamonds data set contains information that contains data about thousands of diamonds such as their price, cut, clarity, color, size and more. Through analyzing this data set we can see how certain aspects of diamonds affect its price. 
+
+Below is code to graph the diamonds data with price on the x-axis and count on the y-axis. The facets are split up by the quality of the cut of the diamond.
+```{r diamondsDataGraph, echo = TRUE}
+#This code chunk creates the graph below of the diamonds data
+library(ggplot2)
+ggplot(diamonds) +
+     aes(x = price, fill = color) +
+     geom_histogram(bins = 30L) +
+     scale_fill_hue(direction = 1) +
+     theme_minimal() +
+     facet_wrap(vars(cut))
+```
+
+Below is the code to provide summary statistics for the diamonds data set with the data grouped by cut. 
+```{r diamondsData, echo = TRUE}
+#This code chunk provides the summary statistics of the diamonds data
+library(dplyr)
+library(ggplot2)
+library(kableExtra)
+data(diamonds)
+diamondsData <- diamonds %>%
+group_by(cut) %>%
+select(cut, x) %>%
+summarize(
+across(
+.cols = where(is.numeric),
+.fns = list(
+min = ~min(x, na.rm = TRUE),
+firstQuintile = ~quantile(x, probs = 0.2, na.rm = TRUE),
+secondQuintile = ~quantile(x, probs = 0.4, na.rm = TRUE),
+median = ~median(x, na.rm = TRUE),
+thirdQuintile = ~quantile(x, probs = 0.6, na.rm = TRUE),
+fourthQuintile = ~quantile(x, probs = 0.8, na.rm = TRUE),
+max = ~max(x, na.rm = TRUE),
+mean = ~mean(x, na.rm = TRUE),
+stdDeviation = ~sd(x, na.rm = TRUE)
+)
+),
+count = n()
+)
+
+diamondsData %>%
+kable(
+caption = "Summary Statistics for Length (x) of Diamonds",
+booktabs = TRUE,
+align = c("l", rep("c", 6)),
+col.names = c(
+"Cut",
+"Minimum",
+"First Quintile",
+"Second Quintile",
+"Median",
+"Third Quintile",
+"Fourth Quintile",
+"Maximum",
+"Mean",
+"Standard Deviation",
+"Count"
+)
+) %>%
+kableExtra::kable_styling(
+bootstrap_options = c("striped", "condensed"),
+font_size = 8
+)
+```
+
+## Analysis
+While this table shows that cut and the length of a diamond do not seem to have any strong relationship there are a few things that we can take from the data. The length of the diamonds decreased slightly as the quality of the cut increased because the mean of the length of the diamonds decreased as the quality increased. The quintiles for the fair cut diamonds were slightly larger than the ones for the ideal cut diamonds. We can conclude there is a weak relationship between the length of a diamond and the quality of the cut.
+
+```{r loadPackages}
+#Load packages with groundhog to improve stability
+library("groundhog")
+pkgs <- c("firstpackage", "secondpackage", "thirdpackage")
+groundhog.library(pkgs, '2023-11-16') #Use the date that you started the project here
+```
+
+\newpage
+# Code Appendix
+``` {r codeAppedix}
+#| ref.label = knitr::all_labels(),
+#| echo = TRUE,
+#| eval = FALSE
+```
